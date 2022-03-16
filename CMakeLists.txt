@@ -1,12 +1,16 @@
+# Project settings
 cmake_minimum_required(VERSION 3.19)
-project(course_work_y2s2)
+project(course-work-y2s2)
 
+# Version of C++
 set(CMAKE_CXX_STANDARD 17)
 
-# Add MPI Package to Project
+# Libraries connection
 find_package(MPI REQUIRED)
+include_directories("C:/libjpeg-turbo-gcc/include")
 
-add_executable(course_work_y2s2 main.cpp)
+# Adding executable files
+add_executable(course-work-y2s2 main.cpp)
 
-# Add MPI library for code completion and compiling
-target_link_libraries(course_work_y2s2 PUBLIC MPI::MPI_CXX)
+# Add library for code completion and compiling
+target_link_libraries(course-work-y2s2 PUBLIC MPI::MPI_CXX )
