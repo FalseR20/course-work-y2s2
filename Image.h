@@ -3,6 +3,19 @@
 
 
 class Image {
+public:
+    explicit Image(const char *filename);
+
+    void roberts();
+
+    void save(const char *filename);
+
+    bool debug = false;
+private:
+    int height, width;
+    unsigned long jpegSize;
+    unsigned char *jpegBuf;
+    unsigned char *image;
 
 };
 
