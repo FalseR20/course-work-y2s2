@@ -8,9 +8,9 @@ public:
 
     void roberts();
 
-    void save(const char *filename);
+    void save(const char *filename, int quality = 100);
 
-    bool debug = false;
+//    bool debug = false;
 private:
     int height, width;
     unsigned long jpegSize;

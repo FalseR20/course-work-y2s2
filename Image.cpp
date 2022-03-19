@@ -1,6 +1,6 @@
-#include <turbojpeg.h>
 #include <cstdio>
 #include <cstdlib>
+#include <turbojpeg.h>
 
 #include "Image.h"
 
@@ -34,10 +34,10 @@ void Image::roberts() {
     image = new_image;
 }
 
-void Image::save(const char *filename) {
+void Image::save(const char *filename, int quality) {
     tjhandle handle = tjInitCompress();
     tjCompress2(handle, image, width, width, height, TJPF_GRAY, &jpegBuf, &jpegSize,
-                TJSAMP_GRAY, 100, 0);
+                TJSAMP_GRAY, quality, 0);
     FILE *file = fopen(filename, "wb");
 
     fwrite(jpegBuf, jpegSize, 1, file);
