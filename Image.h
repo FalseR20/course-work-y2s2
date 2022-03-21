@@ -6,16 +6,17 @@ class Image {
 public:
     explicit Image(const char *filename);
 
-    void roberts();
+    void average();
 
     void save(const char *filename, int quality = 100);
 
-//    bool debug = false;
+    bool debug;
 private:
     int height, width;
     unsigned long jpegSize;
     unsigned char *jpegBuf;
     unsigned char *image;
+    unsigned int nPixels;
 
 };
 
