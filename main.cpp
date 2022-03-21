@@ -1,9 +1,7 @@
 #include "Image.h"
 
-
-int main() {
-    Image image("..\\jpg\\city5k.jpg");
-//    image.debug = true;
-    image.average();
+int main(int argc, char **argv) {
+    Image image("..\\jpg\\space5k.jpg", argc, argv);
+    image.average_MPI();
     image.save("..\\jpg\\new_image.jpg");
 }

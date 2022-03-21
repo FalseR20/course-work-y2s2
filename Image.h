@@ -4,20 +4,24 @@
 
 class Image {
 public:
-    explicit Image(const char *filename);
-
-    void average();
+    explicit Image(const char *filename, int argc, char **argv);
 
     void save(const char *filename, int quality = 100);
 
-    bool debug;
+    void average();
+
+    void average_MPI();
+
+//    bool debug;
 private:
+    int argc;
+    char **argv;
+
     int height, width;
     unsigned long jpegSize;
     unsigned char *jpegBuf;
     unsigned char *image;
     unsigned int nPixels;
-
 };
 
 
