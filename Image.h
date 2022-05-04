@@ -6,6 +6,10 @@ class Image {
 public:
     explicit Image(const char *filename, int argc, char **argv);
 
+    ~Image();
+
+    void load(const char *filename);
+
     void save(const char *filename, int quality = 100);
 
     void average();
@@ -16,6 +20,7 @@ public:
 private:
     int argc;
     char **argv;
+    int rank, size;
 
     int height, width;
     unsigned long jpegSize;
