@@ -1,7 +1,13 @@
-#include "Image.h"
+#include <mpi.h>
+
+#include "ImageMPI.h"
 
 int main(int argc, char **argv) {
-    Image image("./jpg/space5k.jpg", argc, argv);
+    MPI_Init(&argc, &argv);
+
+    Image image("./jpg/space5k.jpg");
     image.average();
-    image.save("./jpg/result1.jpg");
+    image.save("./jpg/result5.jpg");
+
+    MPI_Finalize();
 }

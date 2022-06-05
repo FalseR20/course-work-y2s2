@@ -5,7 +5,7 @@
 
 class Image {
 public:
-    explicit Image(const char *filename, int argc, char **argv);
+    explicit Image(const char *filename);
 
     ~Image();
 
@@ -21,16 +21,16 @@ public:
 
 //    bool debug;
 private:
-    int rank, size;
-    char threadName[11];
+    int rank, size, workers_count;
+    bool isLead;
+    MPI_Status status;
 
+    char threadName[11];
     int height, width;
     unsigned long jpegSize;
     unsigned char *jpegBuf;
     unsigned char *image;
     unsigned int nPixels;
-
-    MPI_Status status;
 };
 
 
