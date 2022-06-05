@@ -61,7 +61,7 @@ void ImageMPI::load(const char *filename) {
 
 void ImageMPI::save(const char *filename, int quality) {
     if (isLead) {
-        printf("Saving image");
+        printf("Saving image\n");
         tjhandle handle = tjInitCompress();
         tjCompress2(handle, image, width, width, height, TJPF_GRAY, &jpegBuf, &jpegSize,
                     TJSAMP_GRAY, quality, 0);
