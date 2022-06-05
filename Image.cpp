@@ -1,5 +1,6 @@
 #include <iostream>
 #include <turbojpeg.h>
+#include <valarray>
 
 #include "Image.h"
 
@@ -63,44 +64,23 @@ void Image::average() {
     image = newImage;
 }
 
-
-void Image::increase_decrease() {
+void Image::increaseDecrease() {
     printf("Changing image with increase-decrease method\n");
-
-    increase();
-    decrease();
-    decrease();
-    increase();
+    increaseDecreaseFunc(std::max);
+    increaseDecreaseFunc(std::min);
+    increaseDecreaseFunc(std::min);
+    increaseDecreaseFunc(std::max);
 }
 
-
-void Image::increase() {
+void Image::increaseDecreaseFunc(const unsigned char &maxOrMin(const unsigned char &, const unsigned char &)) {
     auto *newImage = new unsigned char[nPixels];
     unsigned char pixel;
     for (int i = 0; i < height; i++) {
         for (int j = 0; j < width; j++) {
-            pixel = 0;
+            pixel = 255 - maxOrMin(0, 255);
             for (int ii = std::max(i - 1, 0); ii <= std::min(i + 1, height - 1); ii++) {
                 for (int jj = std::max(j - 1, 0); jj <= std::min(j + 1, width - 1); jj++) {
-                    pixel = std::max(pixel, image[ii * width + jj]);
-                }
-            }
-            newImage[i * width + j] = pixel;
-        }
-    }
-    delete image;
-    image = newImage;
-}
-
-void Image::decrease() {
-    auto *newImage = new unsigned char[nPixels];
-    unsigned char pixel;
-    for (int i = 0; i < height; i++) {
-        for (int j = 0; j < width; j++) {
-            pixel = 255;
-            for (int ii = std::max(i - 1, 0); ii <= std::min(i + 1, height - 1); ii++) {
-                for (int jj = std::max(j - 1, 0); jj <= std::min(j + 1, width - 1); jj++) {
-                    pixel = std::min(pixel, image[ii * width + jj]);
+                    pixel = maxOrMin(pixel, image[ii * width + jj]);
                 }
             }
             newImage[i * width + j] = pixel;

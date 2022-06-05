@@ -13,12 +13,10 @@ public:
 
     void average();
 
-    void increase_decrease();
+    void increaseDecrease();
 
 private:
-    void increase();
-
-    void decrease();
+    void increaseDecreaseFunc(const unsigned char &maxOrMin(const unsigned char &, const unsigned char &));
 
     int height, width;
     unsigned long jpegSize;
