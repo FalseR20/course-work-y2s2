@@ -1,107 +1,111 @@
 #include <iostream>
 #include <turbojpeg.h>
-#include <mpi.h>
 
 #include "Image.h"
 
-
-Image::Image(const char *filename, int argc, char **argv) : argc(argc), argv(argv) {
-    MPI_Init(&argc, &argv);
-    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-    MPI_Comm_size(MPI_COMM_WORLD, &size);
+Image::Image(const char *filename) {
     load(filename);
 }
 
 Image::~Image() {
-    if (rank == 0) {
-        delete[] image;
-    }
-    MPI_Finalize();
+    delete[] image;
 }
 
 void Image::load(const char *filename) {
-    if (rank == 0) {
-        FILE *file = fopen(filename, "rb");
-        if (file == nullptr) {
-            std::cout << "File hasn't found\n";
-            exit(0);
-        }
-
-        fseek(file, 0, SEEK_END); // set pointer to the end of file for getting file size
-        jpegSize = ftell(file); // get file size
-        fseek(file, 0, SEEK_SET);
-        jpegBuf = new unsigned char[jpegSize];
-        fread(jpegBuf, jpegSize, 1, file); //get a pointer to a buffer containing JPEG image in jpegBuf
-        fclose(file);
-
-        tjhandle handle = tjInitDecompress();
-        int jpegSubsamp = TJSAMP_GRAY;
-        tjDecompressHeader2(handle, jpegBuf, jpegSize, &width, &height, &jpegSubsamp);
-        nPixels = width * height;
-        image = new unsigned char[nPixels];
-        tjDecompress2(handle, jpegBuf, jpegSize, image, width, width, height, TJPF_GRAY, 0);
+    printf("Loading image\n");
+    FILE *file = fopen(filename, "rb");
+    if (file == nullptr) {
+        printf("File hasn't found\n");
+        exit(0);
     }
+
+    fseek(file, 0, SEEK_END); // set pointer to the end of file for getting file size
+    jpegSize = ftell(file); // get file size
+    fseek(file, 0, SEEK_SET);
+    jpegBuf = new unsigned char[jpegSize];
+    fread(jpegBuf, jpegSize, 1, file); //get a pointer to a buffer containing JPEG image in jpegBuf
+    fclose(file);
+
+    tjhandle handle = tjInitDecompress();
+    int jpegSubsamp = TJSAMP_GRAY;
+    tjDecompressHeader2(handle, jpegBuf, jpegSize, &width, &height, &jpegSubsamp);
+    nPixels = width * height;
+    image = new unsigned char[nPixels];
+    tjDecompress2(handle, jpegBuf, jpegSize, image, width, width, height, TJPF_GRAY, 0);
 }
 
 void Image::save(const char *filename, int quality) {
-    if (rank == 0) {
-        tjhandle handle = tjInitCompress();
-        tjCompress2(handle, image, width, width, height, TJPF_GRAY, &jpegBuf, &jpegSize,
-                    TJSAMP_GRAY, quality, 0);
-        FILE *file = fopen(filename, "wb");
-        fwrite(jpegBuf, jpegSize, 1, file);
-    }
+    printf("Saving image\n");
+    tjhandle handle = tjInitCompress();
+    tjCompress2(handle, image, width, width, height, TJPF_GRAY, &jpegBuf, &jpegSize,
+                TJSAMP_GRAY, quality, 0);
+    FILE *file = fopen(filename, "wb");
+    fwrite(jpegBuf, jpegSize, 1, file);
 }
 
 void Image::average() {
-    if (rank == 0) {
-        auto *new_image = new unsigned char[nPixels];
-        int buff_pixel;
-        int counter;
-        for (int i = 0; i < height; i++) {
-            for (int j = 0; j < width; j++) {
-                buff_pixel = 0;
-                counter = 0;
-                for (int y = std::max(i - 1, 0); y < std::min(i + 1, height - 1); y++) {
-                    for (int x = std::max(j - 1, 0); x < std::min(j + 1, width - 1); x++) {
-                        buff_pixel += image[y * width + x];
-                        counter++;
-                    }
-                }
-                new_image[i * width + j] = buff_pixel / counter;
-            }
-        }
-        delete image;
-        image = new_image;
-    }
-
-}
-
-void Image::average_MPI() {
-    unsigned char *new_image = new unsigned char[nPixels / size];
-    printf("I, the %d. thread, am here %d", rank, new_image);
-    int buff_pixel;
-    int counter;
-    int delta = height / size * rank;
-    for (int i = 0; i < height / size; i++) {
+    printf("Averaging image\n");
+    auto *newImage = new unsigned char[nPixels];
+    int pixel, counter;
+    for (int i = 0; i < height; i++) {
         for (int j = 0; j < width; j++) {
-            buff_pixel = 0;
-            counter = 0;
-            for (int y = std::max(i - 1, 0); y < std::min(i + 1, height - 1); y++) {
-                for (int x = std::max(j - 1, 0); x < std::min(j + 1, width - 1); x++) {
-                    buff_pixel += image[delta + y * width + x];
+            pixel = counter = 0;
+            for (int ii = std::max(i - 1, 0); ii <= std::min(i + 1, height - 1); ii++) {
+                for (int jj = std::max(j - 1, 0); jj <= std::min(j + 1, width - 1); jj++) {
+                    pixel += image[ii * width + jj];
                     counter++;
                 }
             }
-            new_image[i * width + j] = buff_pixel / counter;
+            newImage[i * width + j] = pixel / counter;
         }
     }
+    delete image;
+    image = newImage;
+}
 
-    MPI_Barrier(MPI_COMM_WORLD);
 
-    for (int i = 0; i < height / size; i++)
-        for (int j = 0; j < width; j++)
-            image[delta + i * height + j] = new_image[i * height + j];
+void Image::increase_decrease() {
+    printf("Changing image with increase-decrease method\n");
 
-    delete[] new_image;
+    increase();
+    decrease();
+    decrease();
+    increase();
+}
+
+
+void Image::increase() {
+    auto *newImage = new unsigned char[nPixels];
+    unsigned char pixel;
+    for (int i = 0; i < height; i++) {
+        for (int j = 0; j < width; j++) {
+            pixel = 0;
+            for (int ii = std::max(i - 1, 0); ii <= std::min(i + 1, height - 1); ii++) {
+                for (int jj = std::max(j - 1, 0); jj <= std::min(j + 1, width - 1); jj++) {
+                    pixel = std::max(pixel, image[ii * width + jj]);
+                }
+            }
+            newImage[i * width + j] = pixel;
+        }
+    }
+    delete image;
+    image = newImage;
+}
+
+void Image::decrease() {
+    auto *newImage = new unsigned char[nPixels];
+    unsigned char pixel;
+    for (int i = 0; i < height; i++) {
+        for (int j = 0; j < width; j++) {
+            pixel = 255;
+            for (int ii = std::max(i - 1, 0); ii <= std::min(i + 1, height - 1); ii++) {
+                for (int jj = std::max(j - 1, 0); jj <= std::min(j + 1, width - 1); jj++) {
+                    pixel = std::min(pixel, image[ii * width + jj]);
+                }
+            }
+            newImage[i * width + j] = pixel;
+        }
+    }
+    delete image;
+    image = newImage;
 }

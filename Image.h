@@ -1,10 +1,9 @@
 #ifndef COURSE_WORK_Y2S2_IMAGE_H
 #define COURSE_WORK_Y2S2_IMAGE_H
 
-
 class Image {
 public:
-    explicit Image(const char *filename, int argc, char **argv);
+    Image(const char *filename);
 
     ~Image();
 
@@ -14,13 +13,12 @@ public:
 
     void average();
 
-    void average_MPI();
+    void increase_decrease();
 
-//    bool debug;
 private:
-    int argc;
-    char **argv;
-    int rank, size;
+    void increase();
+
+    void decrease();
 
     int height, width;
     unsigned long jpegSize;
