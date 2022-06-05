@@ -3,11 +3,11 @@
 
 #include <mpi.h>
 
-class Image {
+class ImageMPI {
 public:
-    explicit Image(const char *filename);
+    explicit ImageMPI(const char *filename);
 
-    ~Image();
+    ~ImageMPI();
 
     void load(const char *filename);
 
@@ -15,17 +15,15 @@ public:
 
     void average();
 
-    int getRank();
+    void increaseDecrease();
 
-    int getSize();
-
-//    bool debug;
 private:
+    void increaseDecreaseFunc(const unsigned char &maxOrMin(const unsigned char &, const unsigned char &));
+
     int rank, size, workers_count;
     bool isLead;
     MPI_Status status;
 
-    char threadName[11];
     int height, width;
     unsigned long jpegSize;
     unsigned char *jpegBuf;
